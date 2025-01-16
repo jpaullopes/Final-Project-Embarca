@@ -19,14 +19,17 @@ int main() {
     while (true) {
         npClear();
         sleep_ms(500);
-        npSetLED(2,0,0,35);
-        npSetLED(6,0,0,35);
-        npSetLED(8,0,0,35);
-        npSetLED(10,0,0,35);
-        npSetLED(12,0,0,35);
-        npSetLED(14,0,0,35);
-        npSetLED(16,0,0,35);
-        npSetLED(18,0,0,35);
+        npSetLED(22, 30, 30, 0);
+        npSetLED(17, 30, 30, 0);
+        npSetLED(14, 30, 30, 0);
+        npSetLED(12, 30, 30, 0);
+        npSetLED(11, 30, 30, 0);
+        npSetLED(10, 30, 30, 0);
+        npSetLED(7, 30, 30, 0);
+        npSetLED(2, 30, 30, 0);
+        npSetLED(6, 30, 30, 0);
+        npSetLED(16, 30, 30, 0);
+
         npWrite();
         
         sleep_ms(500);
