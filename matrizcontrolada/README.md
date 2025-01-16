@@ -37,9 +37,7 @@ O sistema permite o controle de uma matriz de 25 LEDs utilizando três botões f
 
 O código-fonte principal está localizado no arquivo:
 
-```bash
 [matrizcontrolada.c](./matrizcontrolada.c)
-```
 
 ## 👨‍💻 Autor
 
