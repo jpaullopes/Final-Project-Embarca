@@ -42,6 +42,7 @@ pico_set_program_version(joystick "0.1")
 
 # Generate PIO header
 pico_generate_pio_header(joystick ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
+pico_generate_pio_header(joystick ${CMAKE_CURRENT_LIST_DIR}/ws2818b.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(joystick 0)
@@ -58,6 +59,8 @@ target_include_directories(joystick PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(joystick 
+        pico_stdlib
+        hardware_adc
         hardware_spi
         hardware_i2c
         hardware_dma
@@ -66,8 +69,8 @@ target_link_libraries(joystick
         hardware_timer
         hardware_watchdog
         hardware_clocks
-        hardware_adc
-        )
+)
+
 
 pico_add_extra_outputs(joystick)
 

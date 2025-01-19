@@ -67,7 +67,7 @@ target_link_libraries(matrizcontrolada
         hardware_timer
         hardware_watchdog
         hardware_clocks
-        
+        hardware_adc
         )
 
 pico_add_extra_outputs(matrizcontrolada)
