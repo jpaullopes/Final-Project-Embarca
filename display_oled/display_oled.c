@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
-#include "inc/ssd1306.h"
+#include "ssd1306.h"
 #include "hardware/i2c.h"
 
 const uint I2C_SDA = 14;
@@ -139,7 +139,7 @@ restart:
     ssd1306_config(&ssd_bm);
 
     ssd1306_draw_bitmap(&ssd_bm, bitmap_128x64);
-*/
+
 
     while(true) {
         sleep_ms(1000);

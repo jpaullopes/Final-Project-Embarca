@@ -28,37 +28,36 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(teste01 C CXX ASM)
+project(display_oled C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(teste01 teste01.c )
+add_executable(display_oled display_oled.c)
 
-pico_set_program_name(teste01 "teste01")
-pico_set_program_version(teste01 "0.1")
-
-# Generate PIO header
-pico_generate_pio_header(teste01 ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
-
+pico_set_program_name(display_oled "display_oled")
+pico_set_program_version(display_oled "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(teste01 0)
-pico_enable_stdio_usb(teste01 1)
+pico_enable_stdio_uart(display_oled 0)
+pico_enable_stdio_usb(display_oled 1)
 
 # Add the standard library to the build
-target_link_libraries(teste01
+target_link_libraries(display_oled
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(teste01 PRIVATE
+target_include_directories(display_oled PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(teste01 
+target_link_libraries(display_oled 
+        hardware_i2c
+        pico_stdlib
+        hardware_adc
         hardware_spi
         hardware_i2c
         hardware_dma
@@ -66,6 +65,9 @@ target_link_libraries(teste01
         hardware_interp
         hardware_timer
         hardware_watchdog
-)
+        hardware_clocks)
 
-pico_add_extra_outputs(teste01)
+pico_add_extra_outputs(display_oled)
+
+
+
