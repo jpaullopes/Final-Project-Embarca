@@ -34,9 +34,9 @@ project(alertaTemperatura C CXX ASM)
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
-add_executable(alertaTemperatura display_oled.c inc/ssd1306_i2c.c ledsArray.h)
+add_executable(alertaTemperatura alertaTemperatura.c inc/ssd1306_i2c.c ledsArray.h)
 
-pico_set_program_name(alertaTemperatura "display_oled")
+pico_set_program_name(alertaTemperatura "alertaTemperatura")
 pico_set_program_version(alertaTemperatura "0.1")
 
 pico_generate_pio_header(alertaTemperatura ${CMAKE_CURRENT_LIST_DIR}/ws2818b.pio)
@@ -70,6 +70,6 @@ target_link_libraries(alertaTemperatura
         pico_stdio
         )
 
-pico_add_extra_outputs(display_oled)
+pico_add_extra_outputs(alertaTemperatura)
 
 

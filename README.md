@@ -1,92 +1,100 @@
-# Projeto Avante: Monitoramento e Alerta de Temperatura
+# Sistema de Monitoramento e Alerta de Temperatura
 
-Bem-vindo ao Projeto Avante! Este sistema foi desenvolvido para monitorar continuamente a temperatura ambiente usando um sensor ADC e exibir as informações em um display OLED. Além disso, o sistema alerta o usuário em situações críticas através de uma matriz de LEDs e um buzzer.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Build Status](https://img.shields.io/badge/build-pico--sdk-green.svg)](https://github.com/raspberrypi/pico-sdk)
+
+Bem-vindo ao Sistema de Monitoramento e Alerta de Temperatura!  
+Esta solução interativa permite a medição contínua de temperatura através de um sensor ADC, com exibição em um display OLED e alertas visuais/sonoros em situações críticas.
 
 ---
 
-## Sumário
+## 📚 Sumário
 
 - [Introdução](#introdução)
 - [Recursos e Funcionalidades](#recursos-e-funcionalidades)
 - [Arquitetura do Projeto](#arquitetura-do-projeto)
-- [Uso do Sistema](#uso-do-sistema)
-- [Situations Críticas e Boas Práticas](#situações-críticas-e-boas-práticas)
+- [Como Usar](#como-usar)
+- [Situações Críticas](#situações-críticas)
 - [Futuras Melhorias](#futuras-melhorias)
 - [Licença](#licença)
 
 ---
 
-## Introdução
+## 🔍 Introdução
 
-O Projeto Avante é uma solução interativa para monitoramento de temperatura que permite ao usuário ajustar dinamicamente o limite de alerta. Através do uso de técnicas de filtragem, o sistema minimiza as oscilações inerentes ao sensor ADC, proporcionando leituras mais estáveis e precisas.
+O Sistema de Monitoramento e Alerta de Temperatura foi desenvolvido para:
+- Monitorar continuamente a temperatura ambiente.
+- Exibir dados em um display OLED.
+- Permitir ajuste dinâmico do limite de temperatura via botões.
+- Alertar o usuário com LEDs e buzzer em caso de situações críticas.
 
----
-
-## Recursos e Funcionalidades
-
-- **Monitoramento Contínuo:** Leitura periódica do sensor ADC para medir a temperatura.
-- **Exibição Interativa:** Dados exibidos em um display OLED, permitindo uma visão clara das temperaturas, alertas e limites configurados.
-- **Ajuste Dinâmico do Limite:** O usuário pode aumentar ou diminuir o limite de temperatura através de botões de hardware.
-- **Alertas para Situações Críticas:** Em caso de sobreaquecimento, o sistema ativa uma matriz de LEDs e um buzzer para alertar visual e sonoramente.
-- **Filtragem de Sinal:** Técnica de média das leituras para minimizar as oscilações e melhorar a precisão da leitura.
+*Técnicas de filtragem são aplicadas para suavizar as medições do ADC, garantindo precisão mesmo em ambientes ruidosos.*
 
 ---
 
-## Arquitetura do Projeto
+## 🚀 Recursos e Funcionalidades
 
-O projeto está organizado nos seguintes arquivos principais:
-
-- **display_oled.c:** Responsável pela lógica principal, leitura do sensor, processamento dos dados e controle do display OLED, LEDs e buzzer.
-- **ledsArray.h:** Biblioteca que gerencia a matriz de LEDs utilizando a máquina PIO.
-- **ssd1306.h & ssd1306_i2c.c:** Implementam a comunicação e comandos para o display OLED.
-- **ssd1306_font.h:** Contém a fonte bitmap para a renderização de caracteres no display.
-
-Cada módulo foi cuidadosamente estruturado para facilitar manutenções e futuras expansões.
+- **Monitoramento Contínuo:** Atualização periódica das medições de temperatura.
+- **Exibição Interativa:** Visualização clara e organizada com display OLED.
+- **Ajuste Dinâmico:** Usuário pode modificar o limite de temperatura em tempo real.
+- **Alertas Imediatos:** Ativação de LEDs e buzzer ao detectar sobretemperatura.
+- **Filtragem de Sinais:** Média de múltiplas amostras do ADC para reduzir oscilações.
 
 ---
 
-## Uso do Sistema
+## 🛠 Arquitetura do Projeto
 
-1. **Configuração do Hardware:**  
-   - Conecte o sensor ADC, display OLED, LEDs e buzzer aos pinos configurados no código.
-   - Garanta que a alimentação e as conexões estejam corretas.
+O projeto é dividido em módulos bem estruturados:
+
+- **alertaTemperatura.c:** Lógica principal e controle do hardware.
+- **ledsArray.h:** Gerenciamento da matriz de LEDs via máquina PIO.
+- **ssd1306.h / ssd1306_i2c.c:** Comunicação com o display OLED.
+- **ssd1306_font.h:** Dados para renderização dos caracteres.
+
+> **Dica:** Cada módulo foi organizado para facilitar a manutenção e expansão do sistema.
+
+---
+
+## 💡 Como Usar
+
+1. **Configuração do Hardware:**
+   - Conecte os sensores, display OLED, LEDs e buzzer conforme definido no código.
 
 2. **Compilação e Upload:**
-   - Compile o projeto utilizando o SDK do Pico/SDK.
-   - Faça upload do firmware para o microcontrolador.
+   - Compile o projeto utilizando o SDK do Pico.
+   - Faça o upload do firmware para o microcontrolador.
 
-3. **Operação em Tempo Real:**
-   - O display OLED mostrará a temperatura atual, o número de alertas e o limite configurado.
-   - Utilize os botões BT_A e BT_B para ajustar o limite de temperatura dinamicamente.
-
----
-
-## Situações Críticas e Boas Práticas
-
-- **Resposta a Sobretemperaturas:**  
-  Quando a temperatura excede o limite ajustado, o sistema ativa os LEDs em vermelho e emite um som contínuo para alertar o usuário. Esse mecanismo garante uma resposta imediata em situações críticas.
-
-- **Filtragem do Sinal do ADC:**  
-  Para reduzir a influência de ruídos e oscilações, o sistema realiza múltiplas leituras do ADC e calcula uma média. Essa abordagem melhora a precisão da medição e evita falsos alarmes.
+3. **Operação:**
+   - Observe a temperatura, alertas e limite configurado no display OLED.
+   - Ajuste o limite de temperatura usando os botões BT_A e BT_B.
 
 ---
 
-## Futuras Melhorias
+## ⚠️ Situações Críticas
 
-Para tornar o sistema ainda mais robusto e escalável, as seguintes melhorias estão sendo consideradas:
+- **Alerta de Sobretemperatura:**  
+  Quando a temperatura ultrapassa o limite ajustado, todos os LEDs acendem em vermelho e o buzzer emite um som contínuo para notificar o usuário.
 
-- **Implementação de um Sensor Dedicado:**  
-  A substituição do sensor ADC atual por um sensor de temperatura dedicado pode oferecer leituras mais precisas e confiáveis.
-
-- **Integração com Bancos de Dados via Wi-Fi:**  
-  Integrar o sistema com conectividade Wi-Fi permitirá o armazenamento e análise dos dados em bancos de dados remotos, abrindo caminho para monitoramento remoto e análise histórica.
+- **Filtragem de Medidas:**  
+  Para evitar alarmes falsos, o sistema utiliza a média de várias leituras do ADC, garantindo estabilidade nas medições.
 
 ---
 
-## Licença
+## 🔮 Futuras Melhorias
 
-Este projeto está licenciado conforme especificado no arquivo [LICENSE](./LICENSE).
+- **Sensor Dedicado:**  
+  Substituição do sensor ADC por um sensor de temperatura dedicado para maior precisão.
+
+- **Integração Wi-Fi:**  
+  Conectividade para logging remoto dos dados e análise histórica via bancos de dados.
 
 ---
 
-Obrigado por utilizar o Projeto Avante! Contribuições e sugestões são bem-vindas para evoluir ainda mais essa solução.
+## 📜 Licença
+
+Este projeto é licenciado sob os termos da [Licença MIT](./LICENSE).
+
+---
+
+Obrigado por utilizar o Sistema de Monitoramento e Alerta de Temperatura!  
+Contribuições e sugestões são muito bem-vindas.

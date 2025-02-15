@@ -235,7 +235,7 @@ void ssd1306_send_data(ssd1306_t *ssd) {
     ssd->i2c_port, ssd->address, ssd->ram_buffer, ssd->bufsize, false );
 }
 
-// Desenha o bitmap (a ser fornecido em display_oled.c) no display
+// Desenha o bitmap (a ser fornecido em alertaTemperatura.c) no display
 void ssd1306_draw_bitmap(ssd1306_t *ssd, const uint8_t *bitmap) {
     for (int i = 0; i < ssd->bufsize - 1; i++) {
         ssd->ram_buffer[i + 1] = bitmap[i];
