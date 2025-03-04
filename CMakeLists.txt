@@ -34,21 +34,22 @@ project(alertaTemperatura C CXX ASM)
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
-add_executable(alertaTemperatura alertaTemperatura.c inc/ssd1306_i2c.c ledsArray.h)
+add_executable(alertaTemperatura alertaTemperatura.c include/oled/ssd1306_i2c.c include/ledsArray.h)
 
 pico_set_program_name(alertaTemperatura "alertaTemperatura")
 pico_set_program_version(alertaTemperatura "0.1")
 
-pico_generate_pio_header(alertaTemperatura ${CMAKE_CURRENT_LIST_DIR}/ws2818b.pio)
+pico_generate_pio_header(alertaTemperatura ${CMAKE_CURRENT_LIST_DIR}/pio/ws2818b.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(alertaTemperatura 0)
 pico_enable_stdio_usb(alertaTemperatura 1)
 
-
 # Add the standard include files to the build
 target_include_directories(alertaTemperatura PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
+  ${CMAKE_CURRENT_LIST_DIR}/include
+  ${CMAKE_CURRENT_LIST_DIR}/include/oled
   ${PICO_SDK_PATH}
   ${PICO_SDK_PATH}/src/common/pico_cyw43_arch/include
 )

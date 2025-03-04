@@ -3,11 +3,11 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "inc/ssd1306.h"
+#include "include/oled/ssd1306.h"        // Caminho atualizado
 #include "hardware/adc.h"
 #include "hardware/pwm.h"
-#include "ledsArray.h"            // Biblioteca para matriz de LEDs
-#include "hardware/clocks.h"      // para uso de clock
+#include "include/ledsArray.h"           // Agora em include/
+#include "hardware/clocks.h"     // para uso de clock
 
 /* ========== DEFINES ========== */
 #define I2C_SDA 14

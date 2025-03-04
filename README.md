@@ -2,9 +2,10 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Build Status](https://img.shields.io/badge/build-pico--sdk-green.svg)](https://github.com/raspberrypi/pico-sdk)
+[![Web Service](https://img.shields.io/badge/web-flask-blue.svg)](./web)
 
 Bem-vindo ao Sistema de Monitoramento e Alerta de Temperatura!  
-Esta solução interativa permite a medição contínua de temperatura através de um sensor ADC, com exibição em um display OLED e alertas visuais/sonoros em situações críticas.
+Esta solução interativa integra a medição local de temperatura realizada pelo Raspberry Pi Pico com uma interface web para visualização e análise remota.
 
 ---
 
@@ -13,6 +14,7 @@ Esta solução interativa permite a medição contínua de temperatura através 
 - [Introdução](#introdução)
 - [Recursos e Funcionalidades](#recursos-e-funcionalidades)
 - [Arquitetura do Projeto](#arquitetura-do-projeto)
+- [Interface Web](#interface-web)
 - [Como Usar](#como-usar)
 - [Situações Críticas](#situações-críticas)
 - [Futuras Melhorias](#futuras-melhorias)
@@ -22,79 +24,99 @@ Esta solução interativa permite a medição contínua de temperatura através 
 
 ## 🔍 Introdução
 
-O Sistema de Monitoramento e Alerta de Temperatura foi desenvolvido para:
-- Monitorar continuamente a temperatura ambiente.
-- Exibir dados em um display OLED.
-- Permitir ajuste dinâmico do limite de temperatura via botões.
-- Alertar o usuário com LEDs e buzzer em caso de situações críticas.
+Este projeto foi desenvolvido para monitorar continuamente a temperatura ambiente utilizando:
+- **Firmware no Raspberry Pi Pico:** Realiza leituras do sensor ADC, exibe dados em um display OLED e ativa alertas através de LEDs e buzzer.
+- **Interface Web Interativa:** Um servidor Flask recebe os dados do Pico via comunicação serial e os disponibiliza por WebSocket, permitindo a exibição em tempo real através de gráficos e métricas.
 
-*Técnicas de filtragem são aplicadas para suavizar as medições do ADC, garantindo precisão mesmo em ambientes ruidosos.*
+Tecnologias de filtragem são empregadas para estabilizar as medições, garantindo precisão mesmo em ambientes ruidosos.
 
 ---
 
 ## 🚀 Recursos e Funcionalidades
 
-- **Monitoramento Contínuo:** Atualização periódica das medições de temperatura.
-- **Exibição Interativa:** Visualização clara e organizada com display OLED.
-- **Ajuste Dinâmico:** Usuário pode modificar o limite de temperatura em tempo real.
-- **Alertas Imediatos:** Ativação de LEDs e buzzer ao detectar sobretemperatura.
-- **Filtragem de Sinais:** Média de múltiplas amostras do ADC para reduzir oscilações.
+- **Monitoramento Contínuo:** Leitura periódica das temperaturas.
+- **Exibição Local:** Dados são mostrados no display OLED.
+- **Ajuste Dinâmico:** Usuário pode ajustar o limite de temperatura.
+- **Interface Web:** Visualização remota com gráficos interativos, estatísticas (min/máx/média) e alertas via WebSocket.
+- **Filtragem de Sinal:** Média das leituras do ADC para reduzir oscilações.
 
 ---
 
 ## 🛠 Arquitetura do Projeto
 
-O projeto é dividido em módulos bem estruturados:
+O projeto é dividido em dois módulos principais:
 
-- **alertaTemperatura.c:** Lógica principal e controle do hardware.
-- **ledsArray.h:** Gerenciamento da matriz de LEDs via máquina PIO.
-- **ssd1306.h / ssd1306_i2c.c:** Comunicação com o display OLED.
-- **ssd1306_font.h:** Dados para renderização dos caracteres.
+### Firmware (Raspberry Pi Pico)
+- **alertaTemperatura.c:** Lógica principal para leitura do sensor, controle do display OLED, LEDs e buzzer.
+- **ledsArray.h:** Gerenciamento da matriz de LEDs via PIO.
+- **ssd1306.h / ssd1306_i2c.c / ssd1306_font.h:** Comunicação e renderização no display OLED.
 
-> **Dica:** Cada módulo foi organizado para facilitar a manutenção e expansão do sistema.
+### Interface Web
+- **Servidor Flask (app.py):** Recebe dados da porta serial e fornece comunicação via WebSocket.
+- **Frontend:** HTML, CSS e JavaScript (armazenados na pasta `web/static` e `web/templates`) que exibem gráficos e métricas em tempo real.
+
+---
+
+## 🌐 Interface Web
+
+A interface web permite:
+- Visualizar os dados de temperatura em tempo real.
+- Visualizar gráficos, estatísticas e histórico de leituras.
+- Receber alertas visuais instantâneos caso a temperatura ultrapasse o limite configurado.
+
+A estrutura do módulo web :
+```
+/c:/EmbarcaT/avante/web/
+├── app.py                 # Servidor Flask
+├── requirements.txt       # Dependências Python
+├── static/                # Arquivos estáticos (CSS, JavaScript)
+│   ├── script.js
+│   └── style.css
+└── templates/             # Templates HTML
+    └── index.html
+```
 
 ---
 
 ## 💡 Como Usar
 
-1. **Configuração do Hardware:**
-   - Conecte os sensores, display OLED, LEDs e buzzer conforme definido no código.
+### Hardware e Firmware:
+1. **Configuração do Hardware:**  
+   - Conecte o sensor de temperatura, display OLED, LEDs e buzzer conforme definido no firmware.
+2. **Compilação e Upload:**  
+   - Compile e carregue o firmware no Raspberry Pi Pico utilizando o SDK do Pico.
+3. **Operação Local:**  
+   - O display OLED exibirá os dados atuais, alertas e limites configurados.
 
-2. **Compilação e Upload:**
-   - Compile o projeto utilizando o SDK do Pico.
-   - Faça o upload do firmware para o microcontrolador.
-
-3. **Operação:**
-   - Observe a temperatura, alertas e limite configurado no display OLED.
-   - Ajuste o limite de temperatura usando os botões BT_A e BT_B.
+### Interface Web:
+1. **Instalação:**  
+   - Navegue para o diretório `web` e instale as dependências:
+     ```bash
+     pip install -r requirements.txt
+     ```
+2. **Execução:**  
+   - Inicie o servidor Flask:
+     ```bash
+     python app.py
+     ```
+3. **Acesso:**  
+   - Abra `http://localhost:5000` no navegador para visualizar a interface web interativa.
 
 ---
 
 ## ⚠️ Situações Críticas
 
 - **Alerta de Sobretemperatura:**  
-  Quando a temperatura ultrapassa o limite ajustado, todos os LEDs acendem em vermelho e o buzzer emite um som contínuo para notificar o usuário.
+  Quando a temperatura excede o limite, os LEDs são ativados em vermelho, o buzzer emite som e a interface web exibe um alerta visual imediato.
 
 - **Filtragem de Medidas:**  
-  Para evitar alarmes falsos, o sistema utiliza a média de várias leituras do ADC, garantindo estabilidade nas medições.
-
----
-
-## 🔮 Futuras Melhorias
-
-- **Sensor Dedicado:**  
-  Substituição do sensor ADC por um sensor de temperatura dedicado para maior precisão.
-
-- **Integração Wi-Fi:**  
-  Conectividade para logging remoto dos dados e análise histórica via bancos de dados.
+  O sistema utiliza a média de múltiplas leituras do ADC, garantindo que pequenos ruídos não disparem alarmes falsos.
 
 ---
 
 ## 📜 Licença
 
-Este projeto é licenciado sob os termos da [Licença MIT](./LICENSE).
+Este projeto está licenciado sob os termos da [Licença MIT](./LICENSE).
 
 ---
 
-Obrigado por utilizar o Sistema de Monitoramento e Alerta de Temperatura!  
-Contribuições e sugestões são muito bem-vindas.
