@@ -70,28 +70,28 @@ target_link_libraries(teste02
 
 pico_add_extra_outputs(teste02)
 
-# Add joystick project
-project(joystick C CXX ASM)
+# Add teste02 project
+project(teste02 C CXX ASM)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(joystick joystick.c )
+add_executable(teste02 teste02.c )
 
-pico_set_program_name(joystick "joystick")
-pico_set_program_version(joystick "0.1")
+pico_set_program_name(teste02 "teste02")
+pico_set_program_version(teste02 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(joystick 0)
-pico_enable_stdio_usb(joystick 1)
+pico_enable_stdio_uart(teste02 0)
+pico_enable_stdio_usb(teste02 1)
 
 # Add the standard library to the build
-target_link_libraries(joystick
+target_link_libraries(teste02
         hardware_adc
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(joystick PRIVATE
+target_include_directories(teste02 PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(joystick)
+pico_add_extra_outputs(teste02)

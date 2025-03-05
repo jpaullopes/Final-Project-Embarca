@@ -1,4 +1,6 @@
 #include "ssd1306_i2c.h"
+#include "ssd1306.h"
+
 extern void calculate_render_area_buffer_length(struct render_area *area);
 extern void ssd1306_send_command(uint8_t cmd);
 extern void ssd1306_send_command_list(uint8_t *ssd, int number);

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
@@ -239,7 +240,6 @@ void ssd1306_send_data(ssd1306_t *ssd) {
 void ssd1306_draw_bitmap(ssd1306_t *ssd, const uint8_t *bitmap) {
     for (int i = 0; i < ssd->bufsize - 1; i++) {
         ssd->ram_buffer[i + 1] = bitmap[i];
-
-        ssd1306_send_data(ssd);
     }
+    ssd1306_send_data(ssd);
 }

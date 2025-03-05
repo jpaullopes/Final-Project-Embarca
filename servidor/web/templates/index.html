@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Monitoramento de Temperatura</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Monitoramento de Temperatura</h1>
+        <div id="status-container">
+            Status: <span id="status">Conectando...</span>
+            <div id="session-info">Início: <span id="startTime">--:--:--</span></div>
+        </div>
+    </header>
+    
+    <div id="info">
+        <div class="info-grid">
+            <div class="info-item">
+                <h3>Temperatura Atual</h3>
+                <p><span id="tempAtual">--</span> °C</p>
+            </div>
+            <div class="info-item">
+                <h3>Limite</h3>
+                <p><span id="limiteTemp">--</span> °C</p>
+            </div>
+            <div class="info-item">
+                <h3>Status do Alerta</h3>
+                <p><span id="statusAlerta">--</span></p>
+                <div class="alerta-info">O alerta só desliga quando a temperatura estiver 2°C abaixo do limite</div>
+            </div>
+            <div class="info-item">
+                <h3>Total de Alertas</h3>
+                <p><span id="alertCount">0</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <!-- Gráfico principal de temperatura em tempo real -->
+        <div class="chart-container">
+            <h3>Temperatura em Tempo Real</h3>
+            <div class="chart-wrapper">
+                <canvas id="tempChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Gráfico de medidor (gauge) melhorado -->
+        <div class="chart-container">
+            <h3>Medidor de Temperatura</h3>
+            <div class="chart-wrapper gauge-container">
+                <div id="gauge">
+                    <div class="gauge-body">
+                        <div class="gauge-fill" id="gaugeFill"></div>
+                        <div class="gauge-cover" id="gaugeValue">--</div>
+                    </div>
+                    <div class="gauge-scale">
+                        <span class="gauge-min">0°C</span>
+                        <span class="gauge-limit" id="gaugeLimit">--°C</span>
+                        <span class="gauge-max">50°C</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de duração da sessão (substitui o histórico de alertas) -->
+        <div class="chart-container">
+            <h3>Informações da Sessão</h3>
+            <div class="session-info-grid">
+                <div class="session-item">
+                    <h4>Tempo de Monitoramento</h4>
+                    <p id="sessionDuration">00:00:00</p>
+                </div>
+                <div class="session-item">
+                    <h4>Temperatura Média</h4>
+                    <p id="avgTemp">--°C</p>
+                </div>
+                <div class="session-item">
+                    <h4>Temperatura Mínima</h4>
+                    <p id="minTemp">--°C</p>
+                </div>
+                <div class="session-item">
+                    <h4>Temperatura Máxima</h4>
+                    <p id="maxTemp">--°C</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de estatísticas -->
+        <div class="chart-container">
+            <h3>Estatísticas de Temperatura</h3>
+            <div class="chart-wrapper">
+                <canvas id="statsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer removido conforme solicitado -->
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

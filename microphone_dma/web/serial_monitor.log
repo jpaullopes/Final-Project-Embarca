@@ -1,0 +1,7 @@
+2025-03-05 14:01:30,099 - INFO - Porta COM4 aberta com baud rate 115200
+2025-03-05 14:01:30,099 - INFO - Monitoramento iniciado. Pressione Ctrl+C para encerrar.
+2025-03-05 14:01:53,293 - INFO - Monitoramento interrompido pelo usuário.
+2025-03-05 14:01:53,693 - INFO - Monitoramento concluído após 23.2 segundos
+2025-03-05 14:01:53,696 - INFO - Recebidos 5412 bytes, 0 linhas
+2025-03-05 14:01:53,702 - INFO - Taxa média: 233.3 bytes/s, 0.0 linhas/s
+2025-03-05 14:01:53,706 - INFO - Porta COM4 fechada

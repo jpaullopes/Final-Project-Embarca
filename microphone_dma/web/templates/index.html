@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Som - Microphone DMA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Monitor de Som - Raspberry Pi Pico</h1>
+            <div class="mode-indicator">
+                {% if config.get('SIMULATION_MODE', False) or simulation_mode %}
+                <span class="simulation-badge">MODO SIMULAÇÃO</span>
+                {% endif %}
+            </div>
+        </header>
+        
+        <div class="dashboard">
+            <div class="chart-container">
+                <canvas id="soundChart"></canvas>
+            </div>
+            
+            <div class="meters">
+                <div class="meter">
+                    <h3>Nível de Som Atual</h3>
+                    <div class="level-indicator">
+                        <div id="current-level" class="level-bar"></div>
+                    </div>
+                    <div class="level-value" id="level-value">0</div>
+                </div>
+                
+                <div class="intensity-display">
+                    <h3>Intensidade</h3>
+                    <div class="intensity-bars">
+                        <div class="intensity-bar" id="bar-1"></div>
+                        <div class="intensity-bar" id="bar-2"></div>
+                        <div class="intensity-bar" id="bar-3"></div>
+                        <div class="intensity-bar" id="bar-4"></div>
+                        <div class="intensity-bar" id="bar-5"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status">
+            <p>Status: <span id="connection-status">Conectando...</span></p>
+            <p>Última atualização: <span id="last-update">Nunca</span></p>
+            <button id="debug-button" class="debug-button">Testar/Depurar</button>
+            <button id="toggle-simulation" class="simulation-button {% if simulation_mode %}active{% endif %}">
+                <span id="simulation-status">{% if simulation_mode %}Desativar Simulação{% else %}Ativar Simulação{% endif %}</span>
+            </button>
+        </div>
+        
+        <div id="debug-console" class="debug-console hidden">
+            <h3>Console de Depuração</h3>
+            <div id="debug-output" class="debug-output"></div>
+            <div class="debug-controls">
+                <button id="test-connection">Testar Conexão</button>
+                <button id="simulate-data">Simular Dados</button>
+                <button id="close-debug">Fechar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Script para controle do debug console
+        document.getElementById('debug-button').addEventListener('click', function() {
+            document.getElementById('debug-console').classList.toggle('hidden');
+        });
+        
+        document.getElementById('close-debug').addEventListener('click', function() {
+            document.getElementById('debug-console').classList.add('hidden');
+        });
+        
+        document.getElementById('test-connection').addEventListener('click', function() {
+            const output = document.getElementById('debug-output');
+            output.innerHTML += '<p>Testando conexão...</p>';
+            
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    output.innerHTML += `<p>Status: ${data.connected ? 'Conectado' : 'Desconectado'}</p>`;
+                    output.innerHTML += `<p>Informação: ${data.last_error || 'Nenhum erro'}</p>`;
+                })
+                .catch(error => {
+                    output.innerHTML += `<p class="error">Erro: ${error.message}</p>`;
+                });
+        });
+        
+        document.getElementById('simulate-data').addEventListener('click', function() {
+            const output = document.getElementById('debug-output');
+            output.innerHTML += '<p>Simulando dado...</p>';
+            
+            const randomValue = Math.random() * 3.3;
+            const intensity = Math.min(5, Math.floor(randomValue * 1.5));
+            
+            updateCurrentLevel(randomValue);
+            updateIntensityBars(intensity);
+            
+            output.innerHTML += `<p>Valor simulado: ${randomValue.toFixed(2)}V, Intensidade: ${intensity}</p>`;
+        });
+        
+        // Botão para alternar o modo de simulação
+        document.getElementById('toggle-simulation').addEventListener('click', function() {
+            const button = this;
+            const statusSpan = document.getElementById('simulation-status');
+            button.disabled = true;
+            
+            fetch('/api/toggle_simulation')
+                .then(response => response.json())
+                .then(data => {
+                    button.disabled = false;
+                    if (data.simulation_mode) {
+                        statusSpan.textContent = 'Desativar Simulação';
+                        button.classList.add('active');
+                    } else {
+                        statusSpan.textContent = 'Ativar Simulação';
+                        button.classList.remove('active');
+                    }
+                    console.log('Modo de simulação alterado para: ' + data.simulation_mode);
+                    
+                    // Forçar uma atualização imediata dos dados
+                    fetchAndUpdateChart();
+                    
+                    // Recarregar a página após breve atraso para atualizar o cabeçalho
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                })
+                .catch(error => {
+                    button.disabled = false;
+                    console.error('Erro ao alternar modo de simulação:', error);
+                });
+        });
+
+        // Verifique o estado inicial da simulação
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se estamos no modo de simulação com base na classe do botão
+            const button = document.getElementById('toggle-simulation');
+            const isSimulationActive = button.classList.contains('active');
+            console.log('Estado inicial da simulação: ' + isSimulationActive);
+        });
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/debug-tools.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/debug-panel.js') }}"></script>
+</body>
+</html>

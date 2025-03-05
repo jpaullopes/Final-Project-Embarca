@@ -1,0 +1,255 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: #2196F3;
+}
+
+.dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    flex: 1 1 700px;
+    height: 400px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+.meters {
+    flex: 1 1 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.meter, .intensity-display {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+h3 {
+    margin-top: 0;
+    color: #555;
+}
+
+.level-indicator {
+    height: 250px;
+    width: 50px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.level-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: #4caf50;
+    border-radius: 4px;
+    transition: height 0.3s, background-color 0.3s;
+}
+
+.level-value {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.intensity-bars {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    height: 150px;
+    align-items: flex-end;
+}
+
+.intensity-bar {
+    width: 30px;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.3s, background-color 0.3s;
+}
+
+.intensity-bar.low {
+    background-color: #4caf50;
+    height: 30px;
+}
+
+.intensity-bar.medium {
+    background-color: #ffeb3b;
+    height: 60px;
+}
+
+.intensity-bar.high {
+    background-color: #f44336;
+    height: 100px;
+}
+
+.status {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+.status p {
+    margin: 10px 0;
+}
+
+#connection-status.connected {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+#connection-status.disconnected {
+    color: #f44336;
+    font-weight: bold;
+}
+
+.simulation-badge {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.mode-indicator {
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+.debug-button {
+    margin-top: 10px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.debug-button:hover {
+    background-color: #0b7dda;
+}
+
+.simulation-button {
+    margin-left: 10px;
+    background-color: #9c27b0;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.simulation-button:hover {
+    background-color: #7b1fa2;
+}
+
+.simulation-button.active {
+    background-color: #ff5722;
+}
+
+.simulation-button:disabled {
+    background-color: #9e9e9e;
+    cursor: not-allowed;
+}
+
+.debug-console {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.debug-console.hidden {
+    display: none;
+}
+
+.debug-output {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
+    font-family: monospace;
+    margin-bottom: 10px;
+}
+
+.debug-output p {
+    margin: 5px 0;
+}
+
+.debug-output .error {
+    color: #f44336;
+}
+
+.debug-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.debug-controls button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+}
+
+.debug-controls button:hover {
+    opacity: 0.9;
+}
+
+#test-connection {
+    background-color: #2196F3;
+}
+
+#simulate-data {
+    background-color: #ff9800;
+}
+
+#close-debug {
+    background-color: #9e9e9e;
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+}
