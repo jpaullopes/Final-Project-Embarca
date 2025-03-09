@@ -1,86 +1,81 @@
+/**
+ * @file wifiConect.c
+ * @brief Exemplo de uso da biblioteca pico_wifi_lib para conexão WiFi e comunicação TCP com Raspberry Pi Pico W
+ */
+
+#include "pico/stdlib.h"
 #include <stdio.h>
 #include <string.h>
-#include "pico/stdlib.h"
-#include "pico/cyw43_arch.h"
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-#include <lwip/inet.h> // Usando lwip/inet.h em vez de arpa/inet.h
+#include <stdlib.h>
+#include "pico_wifi_lib.h"
 
-#define WIFI_SSID "SEU_SSID"         // Substitua pelo seu SSID Wi-Fi
-#define WIFI_PASSWORD "SUA_SENHA"     // Substitua pela sua senha Wi-Fi
-#define SERVER_IP_ADDRESS "192.168.1.XXX" // Substitua pelo IP da sua máquina local
-#define SERVER_PORT 8080
+// Configurações WiFi - SUBSTITUA com suas informações
+#define WIFI_SSID "Tomada preguicosa"
+#define WIFI_PASSWORD "cachorro123"
+#define SERVER_IP "192.168.3.6"  // Substitua pelo IP do seu servidor
+#define SERVER_PORT 12345        // Porta onde o servidor Python está escutando
 
-void connect_wifi() {
-    if (cyw43_arch_init()) {
-        printf("Falha ao inicializar cyw43_arch\n");
-        while(1);
-    }
-    cyw43_arch_enable_sta_mode();
-
-    printf("Conectando-se à rede Wi-Fi...\n");
-    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
-        printf("Falha na conexão Wi-Fi.\n");
-        cyw43_arch_deinit();
-        while(1);
-    } else {
-        printf("Conectado com sucesso!\n");
-    }
-}
-
+// Função principal
 int main() {
     stdio_init_all();
+    
+    // Aguardar para que o console USB possa se estabelecer
+    sleep_ms(2000);
+    printf("\n\n===== Raspberry Pi Pico W - Demo Biblioteca WiFi =====\n\n");
 
-    if (WIFI_SSID[0] == '\0' || WIFI_PASSWORD[0] == '\0') {
-        printf("Por favor, configure o SSID e a senha do Wi-Fi no código.\n");
+    // Verificar se as credenciais WiFi foram configuradas
+    if (WIFI_SSID[0] == 'T') { // Modificar isso para um check real em seus projetos
+        printf("AVISO: Configure suas credenciais de WiFi no código antes de usar.\n");
+    }
+    
+    // Inicializar o módulo WiFi
+    if (!wifi_init()) {
+        printf("Erro: Falha ao inicializar o módulo WiFi\n");
         return 1;
     }
-
-    connect_wifi();
-
-    struct sockaddr_in server_addr;
-    int sock = -1;
-
+    
+    // Conectar à rede WiFi
+    if (!wifi_connect(WIFI_SSID, WIFI_PASSWORD, 30000)) {
+        printf("Erro: Falha ao conectar à rede WiFi\n");
+        wifi_deinit();
+        return 1;
+    }
+    
+    // Obter e imprimir o endereço IP
+    char ip_addr[16];
+    wifi_get_ip(ip_addr, sizeof(ip_addr));
+    printf("Endereço IP obtido: %s\n\n", ip_addr);
+    
+    // Loop principal - enviar dados a cada 5 segundos
     while (true) {
-        sock = socket(AF_INET, SOCK_STREAM, 0);
-        if (sock < 0) {
-            printf("Erro ao criar socket\n");
-            goto error;
+        // Verificar se o WiFi ainda está conectado
+        if (!wifi_is_connected()) {
+            printf("WiFi desconectado. Tentando reconectar...\n");
+            if (!wifi_connect(WIFI_SSID, WIFI_PASSWORD, 10000)) {
+                printf("Erro ao reconectar. Aguardando 10 segundos...\n");
+                sleep_ms(10000);
+                continue;
+            }
         }
-
-        memset(&server_addr, 0, sizeof(server_addr));
-        server_addr.sin_family = AF_INET;
-        server_addr.sin_port = htons(SERVER_PORT);
-        if (inet_pton(AF_INET, SERVER_IP_ADDRESS, &server_addr.sin_addr) <= 0) { // Verificação de erro para inet_pton
-            printf("Erro ao converter endereço IP\n");
-            goto error;
+        
+        // Enviar dados de temperatura e umidade (gerados automaticamente pela biblioteca)
+        printf("Enviando dados para %s:%d...\n", SERVER_IP, SERVER_PORT);
+        if (!wifi_send_data(SERVER_IP, SERVER_PORT, DATA_TYPE_TEMP_HUMIDITY, NULL, 0)) {
+            printf("Erro ao enviar dados. Verificando conexão...\n");
+            // Continue tentando na próxima iteração
         }
-
-        printf("Conectando ao servidor...\n");
-        if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-            printf("Erro ao conectar\n");
-            goto error;
-        }
-
-        printf("Conectado! Enviando dados...\n");
-
-        float temperature = 25.3 + (float)rand() / RAND_MAX * 2.0;
-        char data_buffer[64];
-        snprintf(data_buffer, sizeof(data_buffer), "Temperatura: %.2f C", temperature);
-
-        if (send(sock, data_buffer, strlen(data_buffer), 0) < 0) {
-            printf("Erro ao enviar dados\n");
-            goto error;
-        }
-        printf("Dados enviados: %s\n", data_buffer);
-
-    error:
-        if (sock >= 0) {
-            close(sock);
-        }
+        
+        // Enviar dados personalizados de exemplo
+        const char *custom_data = "{'device': 'pico_w', 'status': 'online', 'message': 'Hello from Pico W!'}";
+        printf("\nEnviando dados personalizados...\n");
+        wifi_send_data(SERVER_IP, SERVER_PORT, DATA_TYPE_CUSTOM, custom_data, strlen(custom_data));
+        
+        printf("\nAguardando 5 segundos antes da próxima transmissão...\n\n");
         sleep_ms(5000);
     }
-
-    cyw43_arch_deinit();
+    
+    // Código nunca chega aqui no loop infinito acima, mas é uma boa prática incluir
+    wifi_deinit();
+    
     return 0;
 }
