@@ -1,13 +1,22 @@
 # 📡 Raspberry Pi Pico W - Biblioteca de Conexão WiFi
 
+<!-- Adição de animação global para o projeto -->
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+body * {
+  animation: fadeIn 1s ease-in-out;
+}
+</style>
+
 <div align="center">
+  <!-- Imagem do Pico W removida -->
   
-![Raspberry Pi Pico W](https://www.raspberrypi.com/app/uploads/2022/06/PI-PICO-W.png)
-
-[![Status do Projeto](https://img.shields.io/badge/Status-Estável-brightgreen)]()
-[![Licença](https://img.shields.io/badge/Licença-MIT-blue)]()
-[![SDK](https://img.shields.io/badge/Pico_SDK-2.1.0-red)]()
-
+  [![Status do Projeto](https://img.shields.io/badge/Status-Estável-brightgreen)]()
+  [![Licença](https://img.shields.io/badge/Licença-MIT-blue)]()
+  [![SDK](https://img.shields.io/badge/Pico_SDK-2.1.0-red)]()
 </div>
 
 Uma biblioteca que simplifica a conectividade WiFi e comunicação TCP para o Raspberry Pi Pico W, projetada para ser reutilizável em múltiplos projetos IoT.
