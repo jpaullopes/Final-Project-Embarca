@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informações de Conexão - Alerta de Temperatura</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .config-code {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .info-table th, .info-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .info-table th {
+            background-color: #f0f0f0;
+        }
+        .highlight {
+            background-color: #ffff99;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Informações de Conexão</h1>
+            <p>Configure seu Raspberry Pi Pico W para conectar a este servidor</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>Informações do Servidor</h2>
+                <table class="info-table">
+                    <tr>
+                        <th>Endereço IP:</th>
+                        <td>{{ info.ip_local }}</td>
+                    </tr>
+                    <tr>
+                        <th>Porta TCP:</th>
+                        <td>{{ info.porta }}</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h2>Configuração do Pico W</h2>
+                <p>Edite o arquivo <code>alertaTemperatura.c</code> e atualize a linha onde está definido <code>SERVER_IP</code> com o valor abaixo:</p>
+                
+                <div class="config-code">
+                    {{ info.codigo_pico }}
+                </div>
+                
+                <p>Depois de atualizar o código, compile e carregue o firmware no seu Pico W.</p>
+            </section>
+
+            <section>
+                <h2>Verificação de Conectividade</h2>
+                <p>Para garantir que a comunicação TCP está funcionando:</p>
+                <ol>
+                    <li>Certifique-se que o Pico W está conectado à mesma rede Wi-Fi que este servidor</li>
+                    <li>Verifique se o Firewall do Windows está permitindo conexões na porta {{ info.porta }}</li>
+                    <li>O console do servidor mostrará mensagens de log quando receber dados do Pico W</li>
+                </ol>
+            </section>
+
+            <div class="action-buttons">
+                <a href="/" class="button">Voltar para o Dashboard</a>
+            </div>
+        </main>
+
+        <footer>
+            <p>Sistema de Monitoramento de Temperatura com Raspberry Pi Pico W</p>
+        </footer>
+    </div>
+</body>
+</html>

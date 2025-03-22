@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Monitoramento de Temperatura</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Overlay de alerta para notificações visuais -->
+    <div id="alertOverlay" class="alert-overlay"></div>
+    
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">🌡️</div>
+            <h1>Monitoramento de Temperatura</h1>
+        </div>
+        <div id="status-container">
+            Status: <span id="status">Conectando...</span>
+            <div id="session-info">
+                Início: <span id="startTime">--:--:--</span>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="themeSwitch">
+                <label for="themeSwitch" class="theme-slider">
+                    <span class="theme-icon">🌙</span>
+                    <span class="theme-icon">☀️</span>
+                </label>
+            </div>
+        </div>
+    </header>
+    
+    <div id="info">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-icon-container">
+                    <div class="info-icon">🌡️</div>
+                </div>
+                <h3>Temperatura Atual</h3>
+                <p><span id="tempAtual">--</span></p>
+                <div class="trend-indicator">
+                    <span class="trend-arrow"></span>
+                    <span class="trend-value" id="tempTrend">0°C</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon-container">
+                    <div class="info-icon">⚠️</div>
+                </div>
+                <h3>Limite</h3>
+                <p><span id="limiteTemp">--</span></p>
+                <div class="limit-info">Ajustável nos botões da placa</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon-container">
+                    <div class="info-icon">🚨</div>
+                </div>
+                <h3>Status do Alerta</h3>
+                <p><span id="statusAlerta">--</span></p>
+                <div class="alerta-info">O alerta só desliga quando a temperatura estiver 2°C abaixo do limite</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="seguranTemperBar"></div>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon-container">
+                    <div class="info-icon">🔔</div>
+                </div>
+                <h3>Total de Alertas</h3>
+                <p><span id="alertCount">0</span></p>
+                <div class="last-alert" id="lastAlertTime">--</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <!-- Gráfico principal de temperatura em tempo real -->
+        <div class="chart-container">
+            <h3>
+                <span class="chart-icon">📈</span> 
+                Temperatura em Tempo Real
+                <span class="refresh-btn" id="refreshTempChart" title="Atualizar gráfico">↻</span>
+            </h3>
+            <div class="chart-wrapper">
+                <canvas id="tempChart"></canvas>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: rgb(75, 192, 192)"></span>
+                        <span>Temperatura</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: rgb(255, 99, 132)"></span>
+                        <span>Limite</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: rgb(40, 167, 69)"></span>
+                        <span>Zona Segura</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de medidor (gauge) melhorado -->
+        <div class="chart-container">
+            <h3>
+                <span class="chart-icon">🔍</span>
+                Medidor de Temperatura
+            </h3>
+            <div class="chart-wrapper gauge-container">
+                <div id="gauge">
+                    <div class="gauge-body">
+                        <div class="gauge-fill" id="gaugeFill"></div>
+                        <div class="gauge-cover" id="gaugeValue">--</div>
+                    </div>
+                    <div class="gauge-markers">
+                        <div class="marker" style="left: 0%">0°</div>
+                        <div class="marker" style="left: 25%">25°</div>
+                        <div class="marker" style="left: 50%">50°</div>
+                        <div class="marker" style="left: 75%">75°</div>
+                        <div class="marker" style="left: 100%">100°</div>
+                    </div>
+                    <div class="gauge-scale">
+                        <span class="gauge-min">0°C</span>
+                        <span class="gauge-limit" id="gaugeLimit">--°C</span>
+                        <span class="gauge-max">50°C</span>
+                    </div>
+                    <div class="gauge-status">
+                        <div class="state-indicator" id="stateIndicator">Normal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informações da sessão com estatísticas -->
+        <div class="chart-container">
+            <h3>
+                <span class="chart-icon">⏱️</span>
+                Informações da Sessão
+            </h3>
+            <div class="session-info-grid">
+                <div class="session-item" id="durationItem">
+                    <div class="session-icon">⏱️</div>
+                    <h4>Tempo de Monitoramento</h4>
+                    <p id="sessionDuration">00:00:00</p>
+                </div>
+                <div class="session-item" id="avgTempItem">
+                    <div class="session-icon">📊</div>
+                    <h4>Temperatura Média</h4>
+                    <p id="avgTemp">--°C</p>
+                </div>
+                <div class="session-item" id="minTempItem">
+                    <div class="session-icon">❄️</div>
+                    <h4>Temperatura Mínima</h4>
+                    <p id="minTemp">--°C</p>
+                </div>
+                <div class="session-item" id="maxTempItem">
+                    <div class="session-icon">🔥</div>
+                    <h4>Temperatura Máxima</h4>
+                    <p id="maxTemp">--°C</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de estatísticas -->
+        <div class="chart-container">
+            <h3>
+                <span class="chart-icon">📊</span>
+                Estatísticas de Temperatura
+            </h3>
+            <div class="chart-wrapper">
+                <canvas id="statsChart"></canvas>
+                <div class="stats-legends">
+                    <div class="stat-legend blue">Mínima</div>
+                    <div class="stat-legend green">Média</div>
+                    <div class="stat-legend red">Máxima</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Painel de status flutuante -->
+    <div class="floating-status-panel">
+        <div class="status-item">
+            <div class="status-icon pulse" id="connectionIcon"></div>
+            <span>Conexão</span>
+        </div>
+        <div class="status-item">
+            <div class="status-icon" id="alertIcon"></div>
+            <span>Alerta</span>
+        </div>
+        <div class="status-counter">
+            <span>Dados recebidos: </span>
+            <span id="dataCounter">0</span>
+        </div>
+    </div>
+    
+    <!-- Notificações -->
+    <div id="notificationContainer" class="notification-container"></div>
+    
+    <!-- Modal de ajuda -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Informações sobre o sistema</h3>
+            <div class="help-content">
+                <p>Este sistema monitora a temperatura em tempo real através de um Raspberry Pi Pico.</p>
+                <ul>
+                    <li><strong>Temperatura Atual:</strong> Valor da temperatura em tempo real.</li>
+                    <li><strong>Limite:</strong> Temperatura que aciona o alerta. Ajustável nos botões da placa.</li>
+                    <li><strong>Status do Alerta:</strong> Indica se o alerta está ativo ou inativo.</li>
+                    <li><strong>Zona Segura:</strong> O alerta só desativa quando a temperatura estiver 2°C abaixo do limite.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão de ajuda flutuante -->
+    <div class="help-button" id="helpButton">?</div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
