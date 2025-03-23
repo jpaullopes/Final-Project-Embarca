@@ -28,10 +28,15 @@ socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
 # Flag para controlar o nível de verbosidade dos logs
 VERBOSE_LOGGING = True
 
-# IMPORTANTE: Use a mesma porta para HTTP/websocket E TCP
-# O Pico está enviando dados para a porta 5000
-TCP_PORT = 5000
-WEB_PORT = 5001  # Vamos usar a mesma porta para tudo
+# IMPORTANTE: Usando portas diferentes para TCP e web
+TCP_PORT = 5001   # Porta para o Pico W se conectar (não mude, já está configurado no firmware)
+WEB_PORT = 8080   # Porta para a interface web (mudamos para evitar conflito)
+
+#variaveis globais
+temperature_history = []  # Histórico de temperaturas para estatísticas
+min_temp = 999.0          # Temperatura mínima registrada
+max_temp = -999.0         # Temperatura máxima registrada
+avg_temp = 0.0            # Temperatura média
 
 # Variáveis globais para acompanhar estatísticas e dados
 latest_data = {
@@ -104,7 +109,7 @@ def get_local_ip():
 # Função para processar mensagens TCP (middleware)
 def process_tcp_message(message, client_address):
     """Processa mensagens TCP recebidas e atualiza dados"""
-    global latest_data, message_count
+    global latest_data, message_count, temperature_history, min_temp, max_temp, avg_temp
     
     # Apenas processa mensagens que parecem dados de temperatura
     if "Temperatura:" in message:
@@ -115,6 +120,24 @@ def process_tcp_message(message, client_address):
         data = extract_data_from_message(message)
         
         if data and 'temperatura' in data:
+            # Obtém a temperatura atual
+            current_temp = data['temperatura']
+            
+            # Atualiza estatísticas
+            temperature_history.append(current_temp)
+            if len(temperature_history) > 1000:  # Limita o tamanho do histórico
+                temperature_history = temperature_history[-1000:]
+                
+            # Atualiza estatísticas
+            min_temp = min(min_temp, current_temp)
+            max_temp = max(max_temp, current_temp)
+            avg_temp = sum(temperature_history) / len(temperature_history)
+            
+            # Adiciona estatísticas aos dados
+            data['min_temp'] = min_temp
+            data['max_temp'] = max_temp
+            data['avg_temp'] = avg_temp
+            
             # Atualiza os dados mais recentes
             latest_data.update(data)
             
@@ -130,70 +153,6 @@ def process_tcp_message(message, client_address):
     
     return False
 
-# Função para responder a requisições HTTP
-def handle_http_request(client_socket, method, path, headers):
-    """Responde a requisições HTTP na porta TCP"""
-    if method == "GET" and path == "/tcp-info":
-        # Endpoint especial para informações do servidor TCP
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"
-        response += f"Servidor TCP ativo\nConexões: {connection_count}\nMensagens: {message_count}\n"
-        client_socket.send(response.encode('utf-8'))
-    else:
-        # Resposta padrão para outras requisições HTTP
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"
-        response += "Esta é a porta TCP/HTTP combinada. Use a interface web em http://endereço:5001/"
-        client_socket.send(response.encode('utf-8'))
-
-# Função para iniciar o servidor TCP
-def run_tcp_server(stop_event=None):
-    global connection_count
-    local_ip = get_local_ip()
-    
-    logging.info(f"Iniciando servidor TCP em {local_ip}:{TCP_PORT}")
-    print(f"\n[INFO] O mesmo servidor (porta {TCP_PORT}) está sendo usado para:")
-    print(f"       - Servidor Web (HTTP)") 
-    print(f"       - Comunicação WebSocket")
-    print(f"       - Recepção de dados TCP do Pico W")
-    print(f"\n[IMPORTANTE] Configure o Pico W com: SERVER_IP=\"{local_ip}\"")
-    
-    # Criar socket TCP
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    
-    try:
-        server_socket.bind(('0.0.0.0', TCP_PORT))
-        server_socket.listen(5)
-        server_socket.settimeout(0.2)  # Timeout curto para não bloquear o eventlet
-        
-        while not (stop_event and stop_event.is_set()):
-            try:
-                # Tentar aceitar conexão
-                client_socket, client_address = server_socket.accept()
-                connection_count += 1
-                
-                # Processar esta conexão em uma thread separada para não bloquear
-                thread = threading.Thread(
-                    target=handle_tcp_connection, 
-                    args=(client_socket, client_address)
-                )
-                thread.daemon = True
-                thread.start()
-                
-            except socket.timeout:
-                # Timeout normal, continuar loop
-                eventlet.sleep(0)  # Cede para o eventlet
-            except Exception as e:
-                logging.error(f"Erro no servidor TCP: {e}")
-                eventlet.sleep(1)
-    
-    except Exception as e:
-        logging.error(f"Erro fatal no servidor TCP: {e}")
-    
-    finally:
-        if server_socket:
-            server_socket.close()
-            logging.info("Servidor TCP encerrado")
-
 # Função para tratar conexões TCP individuais
 def handle_tcp_connection(client_socket, client_address):
     """Processa uma conexão individual"""
@@ -208,24 +167,12 @@ def handle_tcp_connection(client_socket, client_address):
         # Decodificar dados
         message = data.decode('utf-8', errors='replace').strip()
         
-        # Detectar se é HTTP ou mensagem TCP simples
-        if message.startswith(('GET ', 'POST ', 'PUT ', 'DELETE ', 'HEAD ')):
-            # É uma requisição HTTP
-            parts = message.split(' ', 2)
-            if len(parts) >= 2:
-                method = parts[0]
-                path = parts[1]
-                headers = {}
-                
-                # Processar como HTTP
-                handle_http_request(client_socket, method, path, headers)
+        # Processar como mensagem TCP do Pico W
+        if process_tcp_message(message, client_address):
+            # Se processou com sucesso, enviar confirmação
+            client_socket.send(f"OK: Dados recebidos às {datetime.now().strftime('%H:%M:%S')}\n".encode('utf-8'))
         else:
-            # É uma mensagem TCP simples do Pico W
-            if process_tcp_message(message, client_address):
-                # Se processou com sucesso, enviar confirmação
-                client_socket.send(f"OK: Dados recebidos às {datetime.now().strftime('%H:%M:%S')}\n".encode('utf-8'))
-            else:
-                client_socket.send(f"ERRO: Formato de dados não reconhecido\n")
+            client_socket.send(b"ERRO: Formato de dados nao reconhecido\n")
     
     except socket.timeout:
         logging.debug(f"Timeout na conexão com {client_address[0]}")
@@ -234,6 +181,56 @@ def handle_tcp_connection(client_socket, client_address):
     
     finally:
         client_socket.close()
+
+# Função para iniciar o servidor TCP dedicado
+def run_tcp_server(stop_event=None):
+    global connection_count
+    local_ip = get_local_ip()
+    
+    logging.info(f"Iniciando servidor TCP em {local_ip}:{TCP_PORT}")
+    print(f"\n[INFO] Servidor dividido em duas portas:")
+    print(f"       - Servidor TCP (Pico W): {TCP_PORT}")
+    print(f"       - Interface Web: {WEB_PORT}")
+    print(f"\n[IMPORTANTE] Configure o Pico W com:")
+    print(f"#define SERVER_IP \"{local_ip}\"")
+    print(f"#define TCP_PORT {TCP_PORT}")
+    
+    # Criar socket TCP dedicado
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
+    try:
+        server_socket.bind(('0.0.0.0', TCP_PORT))
+        server_socket.listen(5)  # Aumentado para 5 conexões pendentes
+        server_socket.settimeout(1.0)
+        
+        logging.info(f"Servidor TCP pronto para receber dados do Pico W")
+        
+        while not (stop_event and stop_event.is_set()):
+            try:
+                client_socket, client_address = server_socket.accept()
+                connection_count += 1
+                
+                thread = threading.Thread(
+                    target=handle_tcp_connection, 
+                    args=(client_socket, client_address)
+                )
+                thread.daemon = True
+                thread.start()
+                
+            except socket.timeout:
+                pass  # Timeout normal
+            except Exception as e:
+                logging.error(f"Erro no servidor TCP: {e}")
+                time.sleep(1)
+    
+    except Exception as e:
+        logging.error(f"Erro ao iniciar servidor TCP: {e}")
+    
+    finally:
+        if server_socket:
+            server_socket.close()
+            logging.info("Servidor TCP encerrado")
 
 # Rota principal para exibir a interface web
 @app.route('/')
@@ -246,24 +243,28 @@ def server_info():
     local_ip = get_local_ip()
     info = {
         'ip_local': local_ip,
-        'porta': TCP_PORT,
+        'porta_tcp': TCP_PORT,
+        'porta_web': WEB_PORT,
         'conexoes': connection_count,
         'mensagens': message_count,
         'ultima_temperatura': latest_data.get('temperatura'),
         'ultima_atualizacao': latest_data.get('hora_formatada', 'Nunca'),
-        'codigo_pico': f'#define SERVER_IP "{local_ip}"'
+        'codigo_pico': f'#define SERVER_IP "{local_ip}"\n#define TCP_PORT {TCP_PORT}'
     }
     return render_template('info.html', info=info)
 
 # Rota de API para os dados mais recentes
 @app.route('/api/data')
 def api_data():
-    return jsonify(latest_data)
+    data = dict(latest_data)
+    data['min_temp'] = min_temp
+    data['max_temp'] = max_temp  
+    data['avg_temp'] = avg_temp
+    return jsonify(data)
 
 # Evento Socket.IO de conexão
 @socketio.on('connect')
 def handle_connect():
-    # Envia os dados mais recentes para um cliente que acabou de se conectar
     emit('novo_dado', latest_data)
     logging.info("Novo cliente web conectado via WebSocket")
 
@@ -280,22 +281,20 @@ def main():
     local_ip = get_local_ip()
     
     print("\n=== SISTEMA DE MONITORAMENTO DE TEMPERATURA ===")
-    print(f"Iniciando servidor em http://{local_ip}:{WEB_PORT}")
+    print(f"Iniciando servidor web em http://{local_ip}:{WEB_PORT}")
     print("Pressione Ctrl+C para encerrar\n")
     
     # Inicia o servidor TCP em uma thread separada
     tcp_thread, stop_event = initialize_tcp_thread()
     
     try:
-        # IMPORTANTE: NÃO usar o socket do Flask para o servidor HTTP
-        # Em vez disso, usar o socketio que já lida com isso
+        # Inicia a interface web em uma porta diferente
         socketio.run(app, host='0.0.0.0', port=WEB_PORT, debug=False, use_reloader=False)
     except KeyboardInterrupt:
         print("\nEncerrando servidor...")
     except Exception as e:
-        print(f"Erro ao iniciar servidor: {e}")
+        print(f"Erro ao iniciar servidor web: {e}")
     finally:
-        # Ativa o evento para parar a thread do servidor TCP
         if stop_event:
             stop_event.set()
             tcp_thread.join(timeout=1.0)

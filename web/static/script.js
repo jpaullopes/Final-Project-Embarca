@@ -395,19 +395,18 @@ function updateTrendIndicator(novaTemp) {
 }
 
 // Atualiza o gráfico de estatísticas
-function atualizarGraficoEstatisticas(temperatura) {
-    // Adiciona à lista de temperaturas
-    allTemperatures.push(temperatura);
+function atualizarGraficoEstatisticas(temperatura, minTemp, maxTemp, avgTemp) {
+    // Se recebemos estatísticas do servidor, usamos elas
+    const min = minTemp !== undefined ? minTemp : (allTemperatures.length > 0 ? Math.min(...allTemperatures) : temperatura);
+    const max = maxTemp !== undefined ? maxTemp : (allTemperatures.length > 0 ? Math.max(...allTemperatures) : temperatura);
+    const avg = avgTemp !== undefined ? avgTemp : (allTemperatures.length > 0 ? 
+        allTemperatures.reduce((sum, val) => sum + val, 0) / allTemperatures.length : temperatura);
     
-    // Limita o histórico para não consumir muita memória
+    // Adiciona à lista local apenas como fallback
+    allTemperatures.push(temperatura);
     if (allTemperatures.length > 1000) {
         allTemperatures = allTemperatures.slice(-1000);
     }
-    
-    // Calcula estatísticas
-    const min = Math.min(...allTemperatures);
-    const max = Math.max(...allTemperatures);
-    const avg = allTemperatures.reduce((sum, val) => sum + val, 0) / allTemperatures.length;
     
     // Atualiza os elementos de texto
     minTempElem.textContent = min.toFixed(1) + '°C';
@@ -552,9 +551,10 @@ socket.on('novo_dado', function(data) {
     updateTrendIndicator(temperatura);
     
     // Atualiza todos os gráficos
+    // Atualiza todos os gráficos com as estatísticas do servidor
     atualizarGraficoTemperatura(temperatura, limite);
     atualizarMedidor(temperatura, limite);
-    atualizarGraficoEstatisticas(temperatura);
+    atualizarGraficoEstatisticas(temperatura, data.min_temp, data.max_temp, data.avg_temp);
 });
 
 // Limpa o gráfico de temperatura
@@ -587,11 +587,10 @@ document.addEventListener('DOMContentLoaded', function() {
         themeSwitch.addEventListener('change', toggleTheme);
     }
     
-    // Evento para limpar gráfico de temperatura
+    // inutil isso aqui
     if (refreshTempChartBtn) {
-        refreshTempChartBtn.addEventListener('click', clearTempChart);
+        refreshTempChartBtn.style.display = 'none'; // Oculta o botão
     }
-    
     // Eventos para o modal de ajuda
     if (helpButton && helpModal) {
         helpButton.addEventListener('click', () => {
@@ -623,4 +622,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(style);
+
+    // Solicitar estatísticas periodicamente
+    setInterval(function() {
+        fetch('/api/data')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.temperatura) {
+                    // Atualiza estatísticas com dados do servidor
+                    minTempElem.textContent = data.min_temp ? data.min_temp.toFixed(1) + '°C' : minTempElem.textContent;
+                    maxTempElem.textContent = data.max_temp ? data.max_temp.toFixed(1) + '°C' : maxTempElem.textContent;
+                    avgTempElem.textContent = data.avg_temp ? data.avg_temp.toFixed(1) + '°C' : avgTempElem.textContent;
+                }
+            })
+            .catch(err => console.error('Erro ao buscar estatísticas:', err));
+    }, 30000); // A cada 30 segundos
 });

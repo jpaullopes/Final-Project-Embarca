@@ -52,8 +52,9 @@ set(COMMON_INCLUDE_DIRS
     ${PICO_SDK_PATH}/src/rp2_common/pico_cyw43_arch/include
 )
 
+# Biblioteca estática TCP Client
 add_library(tcp_client STATIC
-    ${CMAKE_CURRENT_LIST_DIR}/src/tcp_client.c
+    ${CMAKE_CURRENT_LIST_DIR}/include/tcp_client.c
     ${CMAKE_CURRENT_LIST_DIR}/include/tcp_client.h
 )
 
@@ -66,13 +67,24 @@ target_link_libraries(tcp_client
     pico_cyw43_arch_lwip_threadsafe_background
 )
 
-add_executable(alertaTemperatura alertaTemperatura.c include/oled/ssd1306_i2c.c include/ledsArray.h)
+# Definir os arquivos fonte do aplicativo principal e dos módulos
+# Nota: Corrigido o caminho com a barra no início
+add_executable(alertaTemperatura 
+    alertaTemperatura.c 
+    include/oled/ssd1306_i2c.c
+    include/oled_display.c
+    include/temperature_sensor.c
+    include/buzzer_control.c
+    include/tcp_alerts.c
+)
 
 pico_set_program_name(alertaTemperatura "alertaTemperatura")
 pico_set_program_version(alertaTemperatura "0.1")
 
+# Gerar o header PIO para os LEDs
 pico_generate_pio_header(alertaTemperatura ${CMAKE_CURRENT_LIST_DIR}/pio/ws2818b.pio)
 
+# Bibliotecas necessárias para o aplicativo principal
 target_link_libraries(alertaTemperatura 
     pico_stdlib
     hardware_i2c
@@ -101,4 +113,3 @@ target_include_directories(alertaTemperatura PRIVATE
 )
 
 pico_add_extra_outputs(alertaTemperatura)
-

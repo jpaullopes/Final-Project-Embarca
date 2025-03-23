@@ -15,8 +15,8 @@
 // Tamanho do buffer de comunicação TCP
 #define TCP_BUF_SIZE 512
 
-// Porta padrão para comunicação TCP
-#define TCP_PORT 5000
+// Porta para comunicação TCP (alterada para corresponder ao servidor Python)
+#define TCP_PORT 5001
 
 // Estrutura principal do cliente TCP
 typedef struct TCP_CLIENT_T_ {
