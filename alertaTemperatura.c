@@ -49,7 +49,7 @@
 #define WIFI_TIMEOUT_MS 10000          // Tempo de espera pra conexão wifi
 #define SERVER_IP "192.168.3.6"        
 #define TCP_PORT 5001                  // Porta TCP do servidor
-#define TCP_INTERVAL_MS 1000           // Intervalo entre envios TCP
+#define TCP_INTERVAL_MS 1000           // Intervalo entre envios TCP - está com taxa de envio de 1 segundo
 
 /* ========== VARIÁVEIS GLOBAIS ========== */
 bool alerta_ativo = false;             // Indica se o alarme está tocando ou não
