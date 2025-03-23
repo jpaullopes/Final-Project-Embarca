@@ -305,8 +305,8 @@ function atualizarGraficoTemperatura(temperatura, limite) {
         tempChart.data.datasets[2].data.push(lastZonaSeguran);
     }
     
-    // Mantém apenas os últimos 20 pontos no gráfico
-    if (tempChart.data.labels.length > 20) {
+    // Mantém apenas os últimos 60 pontos no gráfico
+    if (tempChart.data.labels.length > 60) {
         tempChart.data.labels.shift();
         tempChart.data.datasets[0].data.shift();
         tempChart.data.datasets[1].data.shift();

@@ -37,6 +37,13 @@ pico_sdk_init()
 set(COMMON_INCLUDE_DIRS
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}/include/lwip
+    ${CMAKE_CURRENT_LIST_DIR}/include/network
+    ${CMAKE_CURRENT_LIST_DIR}/include/temperature
+    ${CMAKE_CURRENT_LIST_DIR}/include/display
+    ${CMAKE_CURRENT_LIST_DIR}/include/leds
+    ${CMAKE_CURRENT_LIST_DIR}/include/buzzer
+    ${CMAKE_CURRENT_LIST_DIR}/include/oled
     ${PICO_SDK_PATH}/src/common/pico_stdlib/include
     ${PICO_SDK_PATH}/src/common/pico_base/include
     ${PICO_SDK_PATH}/src/common/pico_time/include
@@ -54,8 +61,8 @@ set(COMMON_INCLUDE_DIRS
 
 # Biblioteca estática TCP Client
 add_library(tcp_client STATIC
-    ${CMAKE_CURRENT_LIST_DIR}/include/tcp_client.c
-    ${CMAKE_CURRENT_LIST_DIR}/include/tcp_client.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/network/tcp_client.c
+    ${CMAKE_CURRENT_LIST_DIR}/include/network/tcp_client.h
 )
 
 # Add include directories for tcp_client
@@ -68,14 +75,14 @@ target_link_libraries(tcp_client
 )
 
 # Definir os arquivos fonte do aplicativo principal e dos módulos
-# Nota: Corrigido o caminho com a barra no início
 add_executable(alertaTemperatura 
     alertaTemperatura.c 
     include/oled/ssd1306_i2c.c
-    include/oled_display.c
-    include/temperature_sensor.c
-    include/buzzer_control.c
-    include/tcp_alerts.c
+    include/display/oled_display.c
+    include/temperature/temperature_sensor.c
+    include/buzzer/buzzer_control.c
+    include/network/tcp_alerts.c
+    include/leds/ledsArray.c
 )
 
 pico_set_program_name(alertaTemperatura "alertaTemperatura")
@@ -107,9 +114,6 @@ pico_enable_stdio_uart(alertaTemperatura 0)
 pico_enable_stdio_usb(alertaTemperatura 1)
 
 # Adicionar os diretórios include padrão ao build
-target_include_directories(alertaTemperatura PRIVATE
-    ${COMMON_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_LIST_DIR}/include/oled
-)
+target_include_directories(alertaTemperatura PRIVATE ${COMMON_INCLUDE_DIRS})
 
 pico_add_extra_outputs(alertaTemperatura)

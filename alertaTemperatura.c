@@ -1,33 +1,43 @@
 /* =========================================================
  * SISTEMA DE MONITORAMENTO DE TEMPERATURA COM ALERTA
  * 
- * Autor: Eu mesmo
- * Data: Março de 2025
  * 
  * Descrição: Esse código implementa um sistema de monitoramento 
  * de temperatura com alerta via buzzer e LEDs, além de
  * envio de dados por WiFi para um servidor Python.
  * ========================================================= */
 
-/* ========== INCLUDES - todas as bibliotecas que preciso ========== */
-// Bibliotecas padrão do Pico
+/**
+ * @file alertaTemperatura.c
+ * @brief Sistema de Monitoramento e Alerta de Temperatura
+ * 
+ * Este programa implementa um sistema de monitoramento de temperatura
+ * usando o sensor interno do RP2040. Quando a temperatura ultrapassa
+ * um limite configurado, o sistema aciona um alarme sonoro e visual,
+ * além de enviar alertas pela rede.
+ * 
+ * Recursos utilizados:
+ * - Sensor de temperatura interno do RP2040
+ * - Display OLED SSD1306 via I2C
+ * - Matriz de LEDs WS2818B via PIO
+ * - Buzzer via PWM
+ * - Comunicação WiFi/TCP para envio de alertas
+ */
+
+/* ========== INCLUDES ========== */
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
-#include "hardware/i2c.h"
-#include "hardware/adc.h"
-#include "hardware/pwm.h"
-#include "hardware/clocks.h"
 #include "pico/cyw43_arch.h"
 
-// Minhas bibliotecas (modularizei para ficar mais organizado)
-#include "include/oled/ssd1306.h"
-#include "include/ledsArray.h"
-#include "include/tcp_client.h"
-#include "include/temperature_sensor.h"
-#include "include/oled_display.h"
-#include "include/buzzer_control.h"
-#include "include/tcp_alerts.h"
+// módulos que estão em diretórios organizados
+#include "display/oled_display.h"
+#include "temperature/temperature_sensor.h"
+#include "buzzer/buzzer_control.h"
+#include "network/tcp_alerts.h"
+#include "network/tcp_client.h"
+#include "leds/ledsArray.h"
+#include "oled/ssd1306.h"
 
 /* ========== DEFINES - configurações que posso mexer facilmente ========== */
 // Pinos - Defini os pinos que vou usar no projeto
@@ -40,7 +50,7 @@
 #define BUZZER_FREQUENCY 1200  // Frequência do buzzer em Hz - som irritante o suficiente kkkk
 
 // Parâmetros do sistema - ajustes gerais
-#define TEMP_LIMITE 45.0f      // Temperatura limite inicial (posso mudar pelos botões depois)
+#define TEMP_LIMITE 25.0f      // Temperatura limite inicial (posso mudar pelos botões depois)
 #define DELTA_HISTERESE 2.0f   // Margem de histerese pra evitar ficar ligando/desligando direto
 
 // Rede WiFi e TCP
@@ -62,8 +72,8 @@ uint32_t tempo_loop = 0;               // Controla a velocidade do loop
 /* ========== FUNÇÃO PRINCIPAL - toda a lógica está aqui ========== */
 int main() {
     // === INICIALIZAÇÃO BÁSICA ===
-    stdio_init_all();                  // Inicializa comunicação serial
-    sleep_ms(2000);                    // Espera 2 segundos pra inicializar o console direito
+    stdio_init_all();             
+    sleep_ms(2000);                    
     
     printf("\n\n===== Sistema de Monitoramento de Temperatura com WiFi =====\n\n");
     printf("[TCP] Vou enviar dados para %s na porta %d\n", SERVER_IP, TCP_PORT);
@@ -178,13 +188,18 @@ int main() {
         
         // --- ATUALIZAÇÃO DO DISPLAY ---
         if (contador_ciclos % 2 == 0) {
-            // Display atualizza a cada dois ciclos pra não ficar piscando
+            // Display atualiza a cada dois ciclos para não ficar piscando
             char temp_str[20];
-            sprintf(temp_str, "Temp: %.2f C", temperatura);
+            // Usando %+6.2f garante espaço para o sinal e alinhamento consistente
+            sprintf(temp_str, "Temp:%+6.2f C", temperatura);
+            
             char alert_str[20];
             sprintf(alert_str, "Alertas: %d", alert_count);
+            
             char limit_str[20];
-            sprintf(limit_str, "Limite: %.1f C", temp_limite_config);
+            // Mesmo formato para o limite
+            sprintf(limit_str, "Limite:%+5.1f C", temp_limite_config);
+            
             char wifi_str[20];
             sprintf(wifi_str, "WiFi: %s", wifi_conectado ? "ON" : "OFF");
             
@@ -193,7 +208,10 @@ int main() {
             char *temp_text[] = { temp_str, alert_str, limit_str, wifi_str };
             display_text(ssd, &frame_area, temp_text, 4, 5, 0, 16);
             
-            printf("Temp: %.2f C | Limite: %.1f C | Alerta: %s | Alertas: %d\n",temperatura, temp_limite_config,alerta_ativo ? "Ativo" : "Inativo",alert_count);
+            // Também atualiza o formato no printf do terminal
+            printf("Temp: %+.2f C | Limite: %+.1f C | Alerta: %s | Alertas: %d\n", 
+                   temperatura, temp_limite_config, 
+                   alerta_ativo ? "Ativo" : "Inativo", alert_count);
         }
         
         // --- AJUSTE DO LIMITE VIA BOTÕES ---
