@@ -57,36 +57,38 @@ def extract_data_from_message(data):
         logging.debug(f"Processando mensagem: '{data}'")
         
         # Extração via expressões regulares para formato complexo
-        temp_match = re.search(r'Temperatura:\s*([0-9]+(?:\.[0-9]+)?)', data)
-        limite_match = re.search(r'Limite:\s*([0-9]+(?:\.[0-9]+)?)', data)
+        temp_match = re.search(r'Temperatura:\s*([+-]?[0-9]+(?:\.[0-9]+)?)', data)
+        limite_match = re.search(r'Limite:\s*([+-]?[0-9]+(?:\.[0-9]+)?)', data)
         alerta_match = re.search(r'Alerta:\s*(\w+)', data)
         alertas_match = re.search(r'Alertas:\s*([0-9]+)', data)
+        
+        # Verifica se todos os padrões foram encontrados na mensagem
+        if not (temp_match and limite_match and alerta_match and alertas_match):
+            logging.warning(f"Formato de mensagem inválido: '{data}'")
+            return None
         
         result = {
             'timestamp': int(datetime.now().timestamp()),
             'hora_formatada': datetime.now().strftime("%H:%M:%S")
         }
         
-        if temp_match:
-            temp = float(temp_match.group(1))
-            # Verificação de sanidade
-            if -50 <= temp <= 150:
-                result['temperatura'] = temp
-            else:
-                logging.warning(f"Temperatura inválida ignorada: {temp}°C")
-                return None
+        # Extrai a temperatura e valida
+        temp = float(temp_match.group(1))
+        # Verificação de sanidade
+        if -50 <= temp <= 150:
+            result['temperatura'] = temp
         else:
-            # Sem temperatura, dados inválidos
+            logging.warning(f"Temperatura inválida ignorada: {temp}°C")
             return None
         
-        if limite_match:
-            result['limite'] = float(limite_match.group(1))
+        # Extrai o limite
+        result['limite'] = float(limite_match.group(1))
         
-        if alerta_match:
-            result['status_alerta'] = alerta_match.group(1)
+        # Extrai o status do alerta
+        result['status_alerta'] = alerta_match.group(1)
         
-        if alertas_match:
-            result['alertas'] = int(alertas_match.group(1))
+        # Extrai o contador de alertas
+        result['alertas'] = int(alertas_match.group(1))
             
         return result
                 

@@ -54,10 +54,10 @@
 #define DELTA_HISTERESE 2.0f   // Margem de histerese pra evitar ficar ligando/desligando direto
 
 // Rede WiFi e TCP
-#define WIFI_SSID "Tomada preguicosa"  
-#define WIFI_PASSWORD "cachorro123"    
+#define WIFI_SSID "Teste" // Nome da rede WiFi
+#define WIFI_PASSWORD "teste123" // Senha do WiFi
 #define WIFI_TIMEOUT_MS 10000          // Tempo de espera pra conexão wifi
-#define SERVER_IP "192.168.3.6"        
+#define SERVER_IP "192.168.5.191"        
 #define TCP_PORT 5001                  // Porta TCP do servidor
 #define TCP_INTERVAL_MS 1000           // Intervalo entre envios TCP - está com taxa de envio de 1 segundo
 
@@ -134,7 +134,7 @@ int main() {
     } else {
         // Falhou! Pisca LEDs amarelos
         for (int i = 0; i < LED_COUNT; i++) {
-            npSetLED(i, 30, 30, 0);
+            npSetLED(i, 255, 30, 0);
         }
         npWrite();
         
