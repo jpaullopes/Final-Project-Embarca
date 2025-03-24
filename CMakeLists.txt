@@ -37,6 +37,13 @@ pico_sdk_init()
 set(COMMON_INCLUDE_DIRS
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}/include/lwip
+    ${CMAKE_CURRENT_LIST_DIR}/include/network
+    ${CMAKE_CURRENT_LIST_DIR}/include/temperature
+    ${CMAKE_CURRENT_LIST_DIR}/include/display
+    ${CMAKE_CURRENT_LIST_DIR}/include/leds
+    ${CMAKE_CURRENT_LIST_DIR}/include/buzzer
+    ${CMAKE_CURRENT_LIST_DIR}/include/oled
     ${PICO_SDK_PATH}/src/common/pico_stdlib/include
     ${PICO_SDK_PATH}/src/common/pico_base/include
     ${PICO_SDK_PATH}/src/common/pico_time/include
@@ -52,9 +59,10 @@ set(COMMON_INCLUDE_DIRS
     ${PICO_SDK_PATH}/src/rp2_common/pico_cyw43_arch/include
 )
 
+# Biblioteca estática TCP Client
 add_library(tcp_client STATIC
-    ${CMAKE_CURRENT_LIST_DIR}/src/tcp_client.c
-    ${CMAKE_CURRENT_LIST_DIR}/include/tcp_client.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/network/tcp_client.c
+    ${CMAKE_CURRENT_LIST_DIR}/include/network/tcp_client.h
 )
 
 # Add include directories for tcp_client
@@ -66,13 +74,24 @@ target_link_libraries(tcp_client
     pico_cyw43_arch_lwip_threadsafe_background
 )
 
-add_executable(alertaTemperatura alertaTemperatura.c include/oled/ssd1306_i2c.c include/ledsArray.h)
+# Definir os arquivos fonte do aplicativo principal e dos módulos
+add_executable(alertaTemperatura 
+    alertaTemperatura.c 
+    include/oled/ssd1306_i2c.c
+    include/display/oled_display.c
+    include/temperature/temperature_sensor.c
+    include/buzzer/buzzer_control.c
+    include/network/tcp_alerts.c
+    include/leds/ledsArray.c
+)
 
 pico_set_program_name(alertaTemperatura "alertaTemperatura")
 pico_set_program_version(alertaTemperatura "0.1")
 
+# Gerar o header PIO para os LEDs
 pico_generate_pio_header(alertaTemperatura ${CMAKE_CURRENT_LIST_DIR}/pio/ws2818b.pio)
 
+# Bibliotecas necessárias para o aplicativo principal
 target_link_libraries(alertaTemperatura 
     pico_stdlib
     hardware_i2c
@@ -95,10 +114,6 @@ pico_enable_stdio_uart(alertaTemperatura 0)
 pico_enable_stdio_usb(alertaTemperatura 1)
 
 # Adicionar os diretórios include padrão ao build
-target_include_directories(alertaTemperatura PRIVATE
-    ${COMMON_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_LIST_DIR}/include/oled
-)
+target_include_directories(alertaTemperatura PRIVATE ${COMMON_INCLUDE_DIRS})
 
 pico_add_extra_outputs(alertaTemperatura)
-
