@@ -12,6 +12,7 @@ Esta solução interativa integra a medição local de temperatura realizada pel
 ## 📚 Sumário
 
 - [Introdução](#introdução)
+- [Documentação do Projeto](#documentação-do-projeto)
 - [Recursos e Funcionalidades](#recursos-e-funcionalidades)
 - [Arquitetura do Projeto](#arquitetura-do-projeto)
 - [Interface Web](#interface-web)
@@ -29,6 +30,21 @@ Este projeto foi desenvolvido para monitorar continuamente a temperatura ambient
 - **Interface Web Interativa:** Um servidor Flask recebe os dados do Pico via TCP e os disponibiliza por WebSocket, permitindo a exibição em tempo real através de gráficos dinâmicos e métricas detalhadas.
 
 Técnicas de filtragem são empregadas para estabilizar as medições e o sistema conta com histerese para evitar oscilações nos alertas, garantindo precisão mesmo em ambientes ruidosos.
+
+---
+
+## 📋 Documentação do Projeto
+
+Este repositório contém uma documentação abrangente que explica:
+
+- **Motivação e Contexto:** Detalhes sobre por que o projeto foi criado, os problemas que ele resolve e os benefícios que traz para os usuários.
+- **Fundamentos Teóricos:** Explicação dos princípios técnicos por trás do sistema, incluindo técnicas de filtragem de sinais, implementação de histerese e conceitos de comunicação via WebSockets.
+- **Escolhas de Design:** Justificativas para as decisões tomadas durante o desenvolvimento, desde a seleção de componentes até a arquitetura de software.
+- **Análise de Requisitos:** Documentação dos requisitos funcionais e não-funcionais que nortearam a implementação do sistema.
+- **Relatório de Testes:** Resultados dos testes realizados para garantir a precisão e confiabilidade das medições.
+- **Possibilidades de Expansão:** Sugestões para futuros aprimoramentos e adaptações do projeto para diferentes cenários.
+
+A documentação completa pode ser encontrada na pasta `/docs` deste repositório, contendo diagramas, especificações e orientações detalhadas para desenvolvedores e usuários.
 
 ---
 
@@ -174,6 +190,4 @@ A interface web oferece:
 ## 📜 Licença
 
 Este projeto está licenciado sob os termos da [Licença MIT](./LICENSE).
-
----
 
